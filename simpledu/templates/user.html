@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+{% extends "base.html" %}
+
+{% block title %}
+    {{user.username}}}
+{% endblock %}
+
+{% block body %}
+    <p>ID: {{user.id}}</p>
+    <p>Username: {{user.username}}</p>
+    <p>Publish courses:</p>
+    {% for course in user.publish_courses %}
+        <span>{{ course.name }}</span><br>
+    {% endfor %}
+{% endblock %}
