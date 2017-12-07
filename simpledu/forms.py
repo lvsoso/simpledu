@@ -8,7 +8,7 @@ from wtforms.validators import Length, Email, EqualTo, DataRequired, URL, Number
 from wtforms import ValidationError
 from wtforms import TextAreaField, IntegerField
 
-from simpledu.models import db, User, Course
+from simpledu.models import db, User, Course, Live
 
 
 
@@ -85,3 +85,19 @@ class CourseForm(FlaskForm):
         db.session.add(course)
         db.session.commit()
         return course
+
+
+class LiveForm(FlaskForm):
+    name = StringField("课程名称", validators=[DataRequired(), Length(1, 128)])
+    user_id = IntegerField("直播用户ID", validators=[DataRequired(), NumberRange(min=1, message="无效的用户ID")])
+    submit = SubmitField("提交")
+
+    def validate_user_id(self, Field):
+        if not User.query.get(self.user_id.data):
+            raise ValidationError("用户不存在")
+
+    def create_live(self):
+        live = Live()
+        self.populate_obj(live)
+        db.session.add(live)
+        db.session.commit()

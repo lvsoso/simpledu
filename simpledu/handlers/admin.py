@@ -3,8 +3,8 @@
 from flask import Blueprint, render_template, request, current_app, flash, redirect, url_for
 from flask_login import login_required
 from simpledu.decorators import admin_required
-from simpledu.models import Course, db, User
-from simpledu.forms import CourseForm, RegisterForm
+from simpledu.models import Course, db, User, Live
+from simpledu.forms import CourseForm, RegisterForm, LiveForm
 
 
 admin = Blueprint("admin", __name__, url_prefix="/admin")
@@ -111,3 +111,25 @@ def delete_course(course_id):
     db.session.commit()
     flash("课程删除成功", "success")
     return redirect(url_for("admin.courses"))
+
+
+@admin.route("/lives")
+@admin_required
+def lives():
+    page = request.args.get("page", default=1, type=int)
+    pagination = Live.query.paginate(
+        page = page,
+        per_page = current_app.config["ADMIN_PER_PAGE"],
+        error_out = False
+    )
+    return render_template("/admin/lives.html", pagination=pagination)
+
+@admin.route("/lives/create", methods=["GET", "POST"])
+@admin_required
+def create_live():
+    form = LiveForm()
+    if form.validate_on_submit():
+        form.create_live()
+        flash("直播创建成功", "success")
+        return redirect(url_for("admin.lives"))
+    return render_template("admin/create_live.html", form=form)
