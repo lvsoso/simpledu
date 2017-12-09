@@ -1,10 +1,15 @@
 #coding=utf-8
 
+import json
+
+from simpledu.handlers.ws import  my_redis
+
 from flask import Blueprint, render_template, request, current_app, flash, redirect, url_for
 from flask_login import login_required
+
 from simpledu.decorators import admin_required
 from simpledu.models import Course, db, User, Live
-from simpledu.forms import CourseForm, RegisterForm, LiveForm
+from simpledu.forms import CourseForm, RegisterForm, LiveForm, MessageForm
 
 
 admin = Blueprint("admin", __name__, url_prefix="/admin")
@@ -133,3 +138,16 @@ def create_live():
         flash("直播创建成功", "success")
         return redirect(url_for("admin.lives"))
     return render_template("admin/create_live.html", form=form)
+
+@admin.route('/live/systemmessage', methods=['GET', 'POST'])
+@admin_required
+def send_message():
+    form = MessageForm()
+    if form.validate_on_submit():
+        my_redis.publish('chat', json.dumps(dict(
+            username='System',
+            text=form.text.data
+        )))
+        flash('系统消息发送成功', 'success')
+        return redirect(url_for('admin.send_message'))
+    return render_template('admin/message.html', form=form)
