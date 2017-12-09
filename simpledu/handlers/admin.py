@@ -139,9 +139,9 @@ def create_live():
         return redirect(url_for("admin.lives"))
     return render_template("admin/create_live.html", form=form)
 
-@admin.route('/live/systemmessage', methods=['GET', 'POST'])
+@admin.route('/message', methods=['GET', 'POST'])
 @admin_required
-def send_message():
+def message():
     form = MessageForm()
     if form.validate_on_submit():
         my_redis.publish('chat', json.dumps(dict(
@@ -149,5 +149,5 @@ def send_message():
             text=form.text.data
         )))
         flash('系统消息发送成功', 'success')
-        return redirect(url_for('admin.send_message'))
+        return redirect(url_for('admin.message'))
     return render_template('admin/message.html', form=form)
